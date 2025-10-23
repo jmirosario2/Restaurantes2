@@ -16,9 +16,10 @@
 
                 <div class="box">
                     <p class="title is-2 has-text-grey">Mesa #{{ mesa.mesa.idMesa }}
-                        <span class="title is-1 has-text-weight-bold is-pulled-right" v-if="mesa.mesa.total">
-                            ${{ mesa.mesa.total }}
-                        </span>
+<p v-if="mesa.insumos && mesa.insumos.length > 0">
+  Total insumos: {{ mesa.insumos.length }}
+</p>
+
                     </p>
                     <p v-if="mesa.mesa.atiende">
                         <strong>Atiende</strong>: {{ mesa.mesa.atiende }}
@@ -119,30 +120,26 @@
     </section>
 </template>
 <script>
-import HttpService from '../../Servicios/HttpService'
-import Ticket from '../Ventas/Ticket.vue'
-import Utiles from '../../Servicios/Utiles'
+import HttpService from "@/Servicios/HttpService";
+import Ticket from "@/components/Ventas/Ticket.vue";
 
 export default {
   name: "RealizarOrden",
-  components: { Ticket },
+
 
   data: () => ({
-    datos: {},
-    logo: null,
-    checkboxPosition: "left",
-    checkboxType: "is-primary",
-    checkedRows: [],
     mesas: [],
     cargando: false,
     mostrarTicket: false,
     ventaSeleccionada: {},
-    insumosSeleccionados: []
+    insumosSeleccionados: [],
+    datos: {},
+    logo: null,
+    checkedRows: []
   }),
 
   mounted() {
     this.crearMesas();
-    // this.obtenerDatos(); // si lo necesitas luego
   },
 
   methods: {
@@ -164,6 +161,25 @@ export default {
           cliente: mesa.mesa.cliente,
           atiende: mesa.mesa.atiende,
           idUsuario: mesa.mesa.idUsuario
+        }
+      });
+    },
+
+    cancelarMesa(mesa) {
+      console.log("Cancelando mesa:", mesa.mesa.idMesa);
+      if (!mesa || !mesa.mesa || !mesa.mesa.idMesa) return;
+      HttpService.eliminar("cancelar_mesa.php", mesa.mesa.idMesa).then((resultado) => {
+        if (resultado) {
+          this.$buefy.toast.open({
+            message: "Mesa liberada correctamente",
+            type: "is-success"
+          });
+          this.crearMesas();
+        } else {
+          this.$buefy.toast.open({
+            message: "No se pudo liberar la mesa",
+            type: "is-danger"
+          });
         }
       });
     },
@@ -197,19 +213,25 @@ export default {
             message: `Gracias por su compra, su cambio <b>$${cambio}</b>`,
             confirmText: "OK"
           });
+
           this.imprimirComprobante(payload);
 
-          // Liberar la mesa
           HttpService.eliminar("cancelar_mesa.php", mesa.mesa.idMesa).then(() => {
             this.crearMesas();
-            /* this.cargando = false; */
+          });
+        } else {
+          this.$buefy.toast.open({
+            message: "Error al registrar la venta",
+            type: "is-danger"
           });
         }
       });
     },
 
     imprimirComprobante(payload) {
-      console.log("Comprobante:", payload);
+      this.ventaSeleccionada = payload;
+      this.mostrarTicket = true;
+      console.log("Comprobante generado:", payload);
     }
   }
 };

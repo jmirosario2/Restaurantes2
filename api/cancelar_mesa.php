@@ -15,8 +15,7 @@ echo json_encode($resultado); */
 
 include_once "encabezado.php";
 
-$idMesa = $_GET['id']; // o $_POST['id'] si usas POST
-
+$idMesa = $_GET['id'];
 $ruta = "./mesas_ocupadas/" . $idMesa . ".csv";
 
 if (file_exists($ruta)) {
