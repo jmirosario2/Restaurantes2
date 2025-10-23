@@ -16,10 +16,9 @@
 
                 <div class="box">
                     <p class="title is-2 has-text-grey">Mesa #{{ mesa.mesa.idMesa }}
-<p v-if="mesa.insumos && mesa.insumos.length > 0">
-  Total insumos: {{ mesa.insumos.length }}
-</p>
-
+                        <span class="title is-1 has-text-weight-bold is-pulled-right" v-if="mesa.mesa.total">
+                            ${{ mesa.mesa.total }}
+                        </span>
                     </p>
                     <p v-if="mesa.mesa.atiende">
                         <strong>Atiende</strong>: {{ mesa.mesa.atiende }}
@@ -88,21 +87,14 @@
                     </b-collapse>
                     <br>
                     <div class="has-text-centered">
-                      <b-button type="is-info" icon-left="plus" @click="ocuparMesa(mesa)">
-  Agregar insumos
-</b-button>
-
-<b-button type="is-success" icon-left="cash-register" @click="cobrar(mesa)">
-  Cobrar
-</b-button>
-                       <!--  <b-button type="is-primary" icon-left="check" @click="ocuparMesa(mesa)" v-if="mesa.mesa.estado === 'libre'">Ocupar</b-button>
-                        <div class="field is-grouped is-centered" v-if="mesa.mesa.estado === 'ocupada'">
+                        <b-button type="is-primary" icon-left="check" @click="ocuparMesa(mesa)" v-if="mesa.mesa.estado === 'libre'">Ocupar</b-button>
+                        <div class="field is-grouped is-centered" v-if="mesa.mesa.estado != 'libre'">
                             <p class="control">
                                 <b-button type="is-success" icon-left="cash" @click="cobrar(mesa)">Cobrar</b-button>
-                            </p> -->
-                           <!--  <p class="control">
+                            </p>
+                            <p class="control">
                                 <b-button type="is-info" icon-left="plus" @click="ocuparMesa(mesa)">Agregar  insumos</b-button>
-                            </p> -->
+                            </p>
                             <p class="control">
                                 <b-button type="is-warning" icon-left="check" v-if="checkedRows.length > 0" @click="marcarInsumosEntregados(mesa)">Marcar entrega</b-button>
                             </p>
@@ -120,119 +112,192 @@
     </section>
 </template>
 <script>
-import HttpService from "@/Servicios/HttpService";
-import Ticket from "@/components/Ventas/Ticket.vue";
+import HttpService from '../../Servicios/HttpService'
+import Ticket from '../Ventas/Ticket.vue'
+import Utiles from '../../Servicios/Utiles'
 
-export default {
-  name: "RealizarOrden",
+export default ({
+    name: "RealizarOrden",
+    components: { Ticket },
 
+    data: () => ({
+        datos: {},
+        logo: null,
+        checkboxPosition: 'left',
+        checkboxType: 'is-primary',
+        checkedRows: [],
+        mesas: [],
+        cargando: false,
+        mostrarTicket: false,
+        ventaSeleccionada: {},
+        insumosSeleccionados: []
+    }),
 
-  data: () => ({
-    mesas: [],
-    cargando: false,
-    mostrarTicket: false,
-    ventaSeleccionada: {},
-    insumosSeleccionados: [],
-    datos: {},
-    logo: null,
-    checkedRows: []
-  }),
-
-  mounted() {
-    this.crearMesas();
-  },
-
-  methods: {
-    crearMesas() {
-      this.cargando = true;
-      HttpService.obtener("obtener_mesas.php").then((resultado) => {
-        this.mesas = resultado;
-        this.cargando = false;
-      });
+    mounted(){
+        this.crearMesas()
+        this.obtenerDatos()
     },
 
-    ocuparMesa(mesa) {
-      if (!mesa || !mesa.mesa || !mesa.mesa.idMesa) return;
-      this.$router.push({
-        name: "Ordenar",
-        params: {
-          id: mesa.mesa.idMesa,
-          insumosEnLista: mesa.insumos,
-          cliente: mesa.mesa.cliente,
-          atiende: mesa.mesa.atiende,
-          idUsuario: mesa.mesa.idUsuario
+    methods:{
+        cancelarOrden(id){
+            this.$buefy.dialog.confirm({
+                title: 'Cancelar mesa ' + id,
+                message: '¿Seguro deseas  cancelar la órden?',
+                confirmText: 'Sí, cancelar',
+                cancelText: 'No',
+                type: 'is-danger',
+                hasIcon: true,
+                onConfirm: () => {
+                    this.cargando = true
+                    HttpService.eliminar("cancelar_mesa.php", mesa.mesa.idMesa)
+                    .then(resultado => {
+                        if(resultado){
+                            this.$buefy.toast.open({
+                                message: "Orden de la mesa " + idMesa + " cancelada",
+                                type: "is-success"
+                            })
+                            this.crearMesas()
+                            this.cargando = false
+                        }
+                    })
+
+                }
+            })
+        },
+
+        obtenerDatos() {
+            HttpService.obtener("obtener_datos_local.php").then((resultado) => {
+                this.datos = resultado;
+                this.logo = Utiles.generarUrlImagen(this.datos.logo)
+            });
+        },
+
+        onImpreso(resultado){
+            this.mostrarTicket = resultado
+        },
+
+        imprimirComprobante(venta){
+            let hoy = new Date();
+
+            let fecha = hoy.getFullYear()+'-'+(hoy.getMonth()+1)+'-'+hoy.getDate();
+
+            let hora = hoy.getHours() + ":" + hoy.getMinutes() + ":" + hoy.getSeconds();
+
+            let fechaVenta = fecha+' '+hora
+            this.ventaSeleccionada = {
+                atendio: venta.atiende,
+                cliente: venta.cliente,
+                fecha: fechaVenta,
+                pagado: venta.pagado,
+                total: venta.total
+            }
+
+            this.insumosSeleccionados = venta.insumos
+            this.mostrarTicket = true
+        },
+
+        marcarInsumosEntregados(mesa){
+            this.cargando = true
+            let insumos = mesa.insumos
+            let marcados = this.checkedRows
+
+            insumos.forEach(insumo => {
+                marcados.forEach(marca => {
+                    if(insumo.id === marca.id)
+                        insumo.estado = "entregado"
+                })
+            })
+
+            let payload = {
+                id: mesa.mesa.idMesa,
+                insumos: insumos,
+                total: mesa.mesa.total,
+                atiende: mesa.mesa.atiende,
+                idUsuario: mesa.mesa.idUsuario,
+                cliente: mesa.mesa.cliente
+            }
+
+            HttpService.registrar(payload, "editar_mesa.php")
+            .then(resultado => {
+                if(resultado){
+                    this.$buefy.toast.open({
+                        message: 'Insumos marcados como entregados',
+                        type: 'is-success'
+                    })
+                    this.crearMesas()
+                    this.cargando = false
+                }
+                this.checkedRows = []
+            })
+
+        },
+
+        cobrar(mesa){
+            this.$buefy.dialog.prompt({
+                title: `Cobrar a la mesa #` + mesa.mesa.idMesa,
+                message: `El cliente debe pagar $` + mesa.mesa.total,
+                inputAttrs: {
+                    type: 'number',
+                    value:"",
+                    placeholder: 'Escribe la cantidad con la que paga',
+                    min: 1
+                },
+                trapFocus: true,
+                onConfirm: (value) => {
+                    if(parseFloat(value) < parseFloat(mesa.mesa.total)){
+                        this.$buefy.toast.open({
+                            message: 'Escribe una cantidad correcta',
+                            type: 'is-warning'
+                        })
+                        return
+                    }
+
+                    this.cargando = true
+                    let cambio = parseFloat(value - mesa.mesa.total)
+
+                    let payload = {
+                        idMesa: mesa.mesa.idMesa,
+                        cliente: mesa.mesa.cliente,
+                        total: mesa.mesa.total,
+                        pagado: value,
+                        idUsuario: mesa.mesa.idUsuario,
+                        insumos: mesa.insumos,
+                        atiende: mesa.mesa.atiende
+                    }
+
+                    HttpService.registrar(payload, "registrar_venta.php")
+                    .then(registrado => {
+                        if(registrado){
+                           this.$buefy.dialog.alert({
+                                title: 'Venta registrada',
+                                message: 'Gracias por su compra, su cambio <b>$' + cambio + '</b>',
+                                confirmText: 'OK'
+                            })
+                            this.imprimirComprobante(payload)
+                            this.crearMesas()
+                            this.cargando = false
+                        }
+                    })
+
+                }
+            })
+        },
+
+        crearMesas(){
+            this.cargando = true
+            HttpService.obtener("obtener_mesas.php")
+            .then(resultado => {
+                this.mesas = resultado
+                this.cargando = false
+            })
+        },
+
+        ocuparMesa(mesa){
+            this.$router.push({
+                name: "Ordenar",
+                params: { id: mesa.mesa.idMesa, insumosEnLista: mesa.insumos, cliente: mesa.mesa.cliente },
+            })
         }
-      });
-    },
-
-    cancelarMesa(mesa) {
-      console.log("Cancelando mesa:", mesa.mesa.idMesa);
-      if (!mesa || !mesa.mesa || !mesa.mesa.idMesa) return;
-      HttpService.eliminar("cancelar_mesa.php", mesa.mesa.idMesa).then((resultado) => {
-        if (resultado) {
-          this.$buefy.toast.open({
-            message: "Mesa liberada correctamente",
-            type: "is-success"
-          });
-          this.crearMesas();
-        } else {
-          this.$buefy.toast.open({
-            message: "No se pudo liberar la mesa",
-            type: "is-danger"
-          });
-        }
-      });
-    },
-
-    cobrar(mesa) {
-      const montoPagado = parseFloat(prompt("Monto pagado:"));
-      const total = parseFloat(mesa.mesa.total);
-
-      if (isNaN(montoPagado) || montoPagado < total) {
-        this.$buefy.toast.open({
-          message: "Monto insuficiente",
-          type: "is-danger"
-        });
-        return;
-      }
-
-      const cambio = montoPagado - total;
-      const payload = {
-        idMesa: mesa.mesa.idMesa,
-        total: total,
-        cliente: mesa.mesa.cliente,
-        atiende: mesa.mesa.atiende,
-        idUsuario: mesa.mesa.idUsuario,
-        insumos: mesa.insumos
-      };
-
-      HttpService.registrar(payload, "registrar_venta.php").then((registrado) => {
-        if (registrado) {
-          this.$buefy.dialog.alert({
-            title: "Venta registrada",
-            message: `Gracias por su compra, su cambio <b>$${cambio}</b>`,
-            confirmText: "OK"
-          });
-
-          this.imprimirComprobante(payload);
-
-          HttpService.eliminar("cancelar_mesa.php", mesa.mesa.idMesa).then(() => {
-            this.crearMesas();
-          });
-        } else {
-          this.$buefy.toast.open({
-            message: "Error al registrar la venta",
-            type: "is-danger"
-          });
-        }
-      });
-    },
-
-    imprimirComprobante(payload) {
-      this.ventaSeleccionada = payload;
-      this.mostrarTicket = true;
-      console.log("Comprobante generado:", payload);
     }
-  }
-};
+})
 </script>

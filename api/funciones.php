@@ -209,7 +209,7 @@ function obtenerInsumosVenta($idVenta){
 function registrarVenta($venta){
 	$bd = conectarBaseDatos();
 	$sentencia = $bd->prepare("INSERT INTO ventas (idMesa, cliente, fecha, total, pagado, idUsuario) VALUES (?,?,?,?,?,?)");
-	$sentencia->execute([$venta->idMesa, $venta->cliente, date("Y-m-d H:i:s"), $venta->total, $venta->pagado,  $venta->idUsario]);
+	$sentencia->execute([$venta->idMesa, $venta->cliente, date("Y-m-d H:i:s"), $venta->total, $venta->pagado,  $venta->idUsuario]);
 	$idVenta = $bd->lastInsertId();
 
 	$insumosRegistrados = registrarInsumosVenta($venta->insumos, $idVenta);

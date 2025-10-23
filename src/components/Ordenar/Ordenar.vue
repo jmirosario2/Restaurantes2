@@ -140,7 +140,7 @@ if (input) input.focus();
           : this.insumosOrden,
         total: this.total,
         atiende: localStorage.getItem("nombreUsuario"),
-        idUsuario: localStorage.getItem("idUsuario"),
+         idUsuario: mesa.mesa.idUsuario, // ← corregido
         cliente: this.cliente,
       };
 
