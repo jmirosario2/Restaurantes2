@@ -26,14 +26,26 @@ const HttpService = {
         return datos
     },
 
-    async eliminar(ruta, id) {
+/*     async eliminar(ruta, id) {
         const respuesta = await fetch(RUTA_GLOBAL + ruta, {
             method: "post",
             body: JSON.stringify(id),
         });
         let resultado = await respuesta.json()
         return resultado
-    }
+    } */
+
+        eliminar(endpoint, id) {
+  return fetch(`http://localhost/Restaurantes2/api/${endpoint}?id=${id}`, {
+    method: "GET"
+  })
+    .then(res => res.json())
+    .catch(err => {
+      console.error("Error al eliminar:", err);
+      return false;
+    });
+}
+
 
 }
 

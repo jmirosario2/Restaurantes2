@@ -13,14 +13,21 @@ $resultado = cancelarMesa($idMesa);
 echo json_encode($resultado); */
 
 
+header('Content-Type: application/json');
 include_once "encabezado.php";
+
+if (!isset($_GET['id'])) {
+  echo json_encode(false);
+  exit;
+}
 
 $idMesa = $_GET['id'];
 $ruta = "./mesas_ocupadas/" . $idMesa . ".csv";
 
 if (file_exists($ruta)) {
-    unlink($ruta);
-    echo json_encode(true);
+  unlink($ruta);
+  echo json_encode(true);
 } else {
-    echo json_encode(false);
+  echo json_encode(false);
 }
+

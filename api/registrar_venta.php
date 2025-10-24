@@ -15,6 +15,14 @@ if (!$venta) {
     exit;
 }
 
+$datos = json_decode(file_get_contents("php://input"));
+
+if (!isset($datos->idUsuario)) {
+  echo json_encode(['error' => 'Falta idUsuario']);
+  exit;
+}
+
+
 include_once "funciones.php";
 
 $resultado = registrarVenta($venta);
