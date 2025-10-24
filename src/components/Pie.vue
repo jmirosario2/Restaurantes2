@@ -3,11 +3,11 @@
         <footer class="footer is-primary fondo">
             <div >
                  <span class="is-pulled-right has-text-white">
-                    <img src="@/assets/logo.png" alt="logo" width="250" height="250">   
+                    <img src="@/assets/logo.png" alt="logo" width="150" height="150">
                 </span>
                 <p class="titulo content has-text-centered title is-3 has-text-white">
                     <strong>{{ datosLocal. nombre }}</strong>. Teléfono <strong>{{ datosLocal.telefono }}</strong>
-                </p>  
+                </p>
             </div>
 
         </footer>

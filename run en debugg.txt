@@ -1,0 +1,5 @@
+cmd o powershell como admin
+
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+npm run dev

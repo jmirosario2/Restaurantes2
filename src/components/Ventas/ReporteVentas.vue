@@ -18,12 +18,12 @@
                 class="has-background-success is-pulled-right has-text-white"
                 style="font-size:3.5em; padding: 10px"
             >
-                Total ${{ totalVentas }}
+                Total RD${{ totalVentas }}
             </span>
         </p>
       </div>
     </nav>
-    
+
     <div class="field is-grouped">
       <p class="control">
         <b-button class="mb-1" @click="recargar">
@@ -92,7 +92,7 @@
         >
           <b-taglist attached>
             <b-tag size="is-large">{{ usuario.nombre }}</b-tag>
-            <b-tag size="is-large" type="is-info">${{ usuario.total }}</b-tag>
+            <b-tag size="is-large" type="is-info">RD${{ usuario.total }}</b-tag>
           </b-taglist>
         </div>
       </b-field>
