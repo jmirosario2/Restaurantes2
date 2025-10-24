@@ -15,76 +15,76 @@
             :key="mesa.mesa.idMesa">
 
                 <div class="box">
-                    <p class="title is-2 has-text-grey">Mesa #{{ mesa.mesa.idMesa }}
-                        <span class="title is-1 has-text-weight-bold is-pulled-right" v-if="mesa.mesa.total">
-                            ${{ mesa.mesa.total }}
-                        </span>
-                    </p>
-                    <p v-if="mesa.mesa.atiende">
-                        <strong>Atiende</strong>: {{ mesa.mesa.atiende }}
-                    </p>
-                    <p v-if="mesa.mesa.cliente">
-                        <strong>Cliente</strong>: {{ mesa.mesa.cliente }}
-                    </p>
-                    <b-collapse
-                        class="card"
-                        animation="slide"
-                        aria-id="contentIdForA11y3"
-                        v-if="mesa.mesa.estado === 'ocupada'">
-                        <template #trigger="props">
-                            <div
-                                class="card-header"
-                                role="button"
-                                aria-controls="contentIdForA11y3"
-                                :aria-expanded="props.open">
-                                <p class="card-header-title">
-                                    Insumos en la orden
-                                </p>
-                                <a class="card-header-icon">
-                                    <b-icon
-                                        :icon="props.open ? 'menu-down' : 'menu-up'">
-                                    </b-icon>
-                                </a>
-                            </div>
-                        </template>
+                  <pre>{{ mesa.mesa }}</pre>
+    <p class="title is-2 has-text-grey">
+        Mesa #{{ mesa.mesa.idMesa }}
+        <span class="title is-1 has-text-weight-bold is-pulled-right" v-if="mesa.mesa.total">
+            ${{ Number(mesa.mesa.total).toFixed(2) }}
+        </span>
+    </p>
 
-                        <div class="card-content">
-                            <div class="content">
-                                <b-table
-                                :data="mesa.insumos"
-                                :checked-rows.sync="checkedRows"
-                                :is-row-checkable="(row) => row.estado !== 'entregado'"
-                                checkable
-                                :checkbox-position="checkboxPosition"
-                                :checkbox-type="checkboxType">
+    <p v-if="mesa.mesa.atiende">
+        <strong>Atiende</strong>: {{ mesa.mesa.atiende }}
+    </p>
+    <p v-if="mesa.mesa.cliente">
+        <strong>Cliente</strong>: {{ mesa.mesa.cliente }}
+    </p>
 
-                                    <b-table-column field="codigo" label="Código" v-slot="props">
-                                        {{ props.row.codigo }}
-                                    </b-table-column>
+    <b-collapse
+        v-if="mesa.mesa.estado === 'pendiente' && mesa.mesa.insumos && mesa.mesa.insumos.length"
+        class="card"
+        animation="slide"
+        aria-id="contentIdForA11y3"
+    >
+        <template #trigger="props">
+            <div class="card-header" role="button">
+                <p class="card-header-title">Insumos en la orden</p>
+                <b-icon :icon="props.open ? 'menu-down' : 'menu-up'" class="card-header-icon" />
+            </div>
+        </template>
 
-                                    <b-table-column field="nombre" label="Nombre" v-slot="props">
-                                        {{ props.row.nombre }}
-                                    </b-table-column>
+        <div class="card-content">
+            <b-table
+                :data="mesa.mesa.insumos"
+                :checked-rows.sync="checkedRows"
+                :is-row-checkable="(row) => row.estado !== 'entregado'"
+                checkable
+                :checkbox-position="checkboxPosition"
+                :checkbox-type="checkboxType"
+            >
+                <b-table-column field="codigo" label="Código" v-slot="props">
+                    {{ props.row.codigo }}
+                </b-table-column>
 
-                                    <b-table-column field="caracteristicas" label="Características" v-slot="props">
-                                        {{ props.row.caracteristicas }}
-                                    </b-table-column>
+                <b-table-column field="nombre" label="Nombre" v-slot="props">
+                    {{ props.row.nombre }}
+                </b-table-column>
 
-                                    <b-table-column field="cantidad" label="Cantidad" v-slot="props">
-                                        {{ props.row.cantidad }} X ${{  props.row.precio }}
-                                    </b-table-column>
+                <b-table-column field="caracteristicas" label="Características" v-slot="props">
+                    {{ props.row.caracteristicas || '—' }}
+                </b-table-column>
 
-                                    <b-table-column field="subtotal" label="Subtotal" v-slot="props">
-                                        ${{ props.row.cantidad * props.row.precio }}
-                                    </b-table-column>
-                                    <b-table-column field="estado" label="" v-slot="props">
-                                        <b-icon icon="alert" type="is-danger" v-if="props.row.estado ==='pendiente'"></b-icon>
-                                        <b-icon icon="check" type="is-success" v-if="props.row.estado ==='entregado'"></b-icon>
-                                    </b-table-column>
-                                </b-table>
-                            </div>
-                        </div>
-                    </b-collapse>
+                <b-table-column field="cantidad" label="Cantidad" v-slot="props">
+                    {{ props.row.cantidad }} × ${{ Number(props.row.precio).toFixed(2) }}
+                </b-table-column>
+
+                <b-table-column field="subtotal" label="Subtotal" v-slot="props">
+                    ${{ (props.row.cantidad * props.row.precio).toFixed(2) }}
+                </b-table-column>
+
+                <b-table-column field="estado" label="" v-slot="props">
+                    <b-icon icon="alert" type="is-danger"
+                        v-if="props.row.estado === 'pendiente'"/>
+                    <b-icon icon="check" type="is-success"
+                        v-if="props.row.estado === 'entregado'"/>
+                </b-table-column>
+            </b-table>
+        </div>
+    </b-collapse>
+
+    <p v-if="['ocupada', 'pendiente'].includes(mesa.mesa.estado)">
+        <i>No hay insumos agregados todavía</i>
+    </p>
                     <br>
                     <div class="has-text-centered">
                         <b-button type="is-primary" icon-left="check" @click="ocuparMesa(mesa)" v-if="mesa.mesa.estado === 'libre'">Ocupar</b-button>
@@ -122,16 +122,19 @@ export default {
   name: "RealizarOrden",
   components: { Ticket },
 
-  data: () => ({
-    mesas: [],
-    cargando: false,
-    mostrarTicket: false,
-    ventaSeleccionada: {},
-    insumosSeleccionados: [],
-    datos: {},
-    logo: null,
-    checkedRows: []
-  }),
+data: () => ({
+  mesas: [],
+  cargando: false,
+  mostrarTicket: false,
+  ventaSeleccionada: {},
+  insumosSeleccionados: [],
+  datos: {},
+  logo: null,
+  checkedRows: [],
+  checkboxPosition: 'left', // valor por defecto
+  checkboxType: 'is-primary' // valor por defecto
+}),
+
 
   mounted() {
     this.crearMesas();
@@ -146,26 +149,38 @@ export default {
 
   methods: {
     crearMesas() {
-      this.cargando = true;
-      HttpService.obtener("obtener_mesas.php").then((resultado) => {
-        this.mesas = resultado;
-        this.cargando = false;
-      });
-    },
+  this.cargando = true;
+  HttpService.obtener("obtener_mesas.php").then((resultado) => {
+    this.mesas = resultado;
 
-    ocuparMesa(mesa) {
-      if (!mesa || !mesa.mesa || !mesa.mesa.idMesa) return;
-      this.$router.push({
-        name: "Ordenar",
-        params: {
-          id: mesa.mesa.idMesa,
-          insumosEnLista: mesa.insumos,
-          cliente: mesa.mesa.cliente,
-          atiende: mesa.mesa.atiende,
-          idUsuario: mesa.mesa.idUsuario
-        }
-      });
-    },
+    // Cargar insumos por mesa ocupada
+    this.mesas.forEach(mesa => {
+      if (mesa.mesa.estado === "pendiente") {
+        HttpService.obtener("obtener_insumos.php?idMesa=" + mesa.mesa.idMesa)
+          .then((insumos) => {
+            this.$set(mesa.mesa, "insumos", insumos); // Aseguramos reactividad
+          });
+      }
+    });
+
+    this.cargando = false;
+  });
+}
+,
+
+ocuparMesa(mesa) {
+  if (!mesa || !mesa.mesa || !mesa.mesa.idMesa) return;
+  this.$router.push({
+    name: "Ordenar",
+    params: {
+      id: mesa.mesa.idMesa,
+      insumosEnLista: mesa.mesa.insumos || [],
+      cliente: mesa.mesa.cliente,
+      atiende: mesa.mesa.atiende,
+      idUsuario: mesa.mesa.idUsuario
+    }
+  });
+},
 
     cancelarMesa(mesa) {
      if (!mesa || !mesa.mesa || !mesa.mesa.idMesa) return;

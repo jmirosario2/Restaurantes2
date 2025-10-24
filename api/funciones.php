@@ -41,6 +41,27 @@ function obtenerVentasSemanaDeUsuario($idUsuario) {
 
 }
 
+function obtenerInsumosMesa($idMesa) {
+    global $db;
+    $idMesa = intval($idMesa);
+    $stmt = $db->prepare("
+        SELECT id, codigo, nombre, precio, caracteristicas, cantidad, estado
+        FROM insumos_mesa
+        WHERE idMesa = ?
+    ");
+    $stmt->execute([$idMesa]);
+    $insumos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($insumos as &$i) {
+        $i['cantidad'] = intval($i['cantidad']);
+        $i['precio'] = floatval($i['precio']);
+        $i['subtotal'] = $i['cantidad'] * $i['precio'];
+    }
+
+    return $insumos;
+}
+
+
 function obtenerInsumosMasVendidos($limite){
 	$bd = conectarBaseDatos();
 	$sentencia = $bd->prepare("SELECT SUM(insumos_venta.precio * insumos_venta.cantidad )
