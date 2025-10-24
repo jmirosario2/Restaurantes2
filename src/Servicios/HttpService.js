@@ -4,9 +4,9 @@ const HttpService = {
   async registrar(datos, ruta) {
     const respuesta = await fetch(RUTA_GLOBAL + ruta, {
       method: "POST",
-      headers: {
+     /*  headers: {
         "Content-Type": "application/json" // ✅ encabezado obligatorio
-      },
+      }, */
       body: JSON.stringify(datos)
     });
 

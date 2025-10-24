@@ -66,7 +66,7 @@ function obtenerTotalesPorMesa(){
 
 function obtenerVentasDelDia(){
 	$bd = conectarBaseDatos();
-	$sentencia = $bd->query("SELECT IFNULL(SUM(total),0) AS totalVentasHoy
+	$sentencia = $bd->query("SELECT IFNULL(SUM(pagado),0) AS totalVentasHoy
 	FROM ventas
 	WHERE DATE(fecha) = CURDATE()");
 	return $sentencia->fetchObject()->totalVentasHoy;
@@ -206,7 +206,7 @@ function obtenerInsumosVenta($idVenta){
 	return $sentencia->fetchAll();
 }
 
-function registrarVenta($venta){
+/* function registrarVenta($venta){
 	$bd = conectarBaseDatos();
 	$sentencia = $bd->prepare("INSERT INTO ventas (idMesa, cliente, fecha, total, pagado, idUsuario) VALUES (?,?,?,?,?,?)");
 	$sentencia->execute([$venta->idMesa, $venta->cliente, date("Y-m-d H:i:s"), $venta->total, $venta->pagado,  $venta->idUsuario]);
@@ -215,6 +215,30 @@ function registrarVenta($venta){
 	$insumosRegistrados = registrarInsumosVenta($venta->insumos, $idVenta);
 	$archivoEliminado = unlink("./mesas_ocupadas/". $venta->idMesa .".csv");
 	if($sentencia && count($insumosRegistrados) > 0 && $archivoEliminado) return true;
+} */
+function registrarVenta($venta){
+  $bd = conectarBaseDatos();
+  $sentencia = $bd->prepare("INSERT INTO ventas (idMesa, cliente, fecha, total, pagado, idUsuario) VALUES (?,?,?,?,?,?)");
+  $ejecutado = $sentencia->execute([
+    $venta->idMesa,
+    $venta->cliente,
+    date("Y-m-d H:i:s"),
+    $venta->total,
+    $venta->pagado,
+    $venta->idUsuario
+  ]);
+
+  $idVenta = $bd->lastInsertId();
+  $insumosRegistrados = registrarInsumosVenta($venta->insumos, $idVenta);
+  $archivo = "./mesas_ocupadas/" . $venta->idMesa . ".csv";
+  $archivoEliminado = file_exists($archivo) ? unlink($archivo) : false;
+
+  return [
+    'ventaRegistrada' => $ejecutado,
+    'idVenta' => $idVenta,
+    'insumos' => $insumosRegistrados,
+    'archivoEliminado' => $archivoEliminado
+  ];
 }
 
 function registrarInsumosVenta($insumos, $idVenta){

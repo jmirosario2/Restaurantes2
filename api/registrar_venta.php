@@ -24,3 +24,14 @@ if (!isset($datos->idUsuario)) {
 // ... tu lógica de inserción aquí ...
 
 echo json_encode(['success' => true]); // ✅ nunca omitas esto
+
+include_once "funciones.php";
+
+$venta = json_decode(file_get_contents("php://input"));
+
+if (!$venta) {
+  echo json_encode(['error' => 'JSON inválido']);
+  exit;
+}
+
+registrarVenta($venta);
