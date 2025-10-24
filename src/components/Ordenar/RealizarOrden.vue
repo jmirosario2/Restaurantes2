@@ -116,6 +116,7 @@
 <script>
 import HttpService from "@/Servicios/HttpService";
 import Ticket from "@/components/Ventas/Ticket.vue";
+import Utiles from "@/Servicios/Utiles"; // Asegúrate de importar Utiles si usas logo
 
 export default {
   name: "RealizarOrden",
@@ -134,6 +135,13 @@ export default {
 
   mounted() {
     this.crearMesas();
+
+    HttpService.obtener("obtener_datos_local.php").then((resultado) => {
+      this.datos = resultado;
+      if (this.datos.logo) {
+        this.logo = Utiles.generarUrlImagen(this.datos.logo);
+      }
+    });
   },
 
   methods: {
@@ -160,20 +168,16 @@ export default {
     },
 
     cancelarMesa(mesa) {
-      if (!mesa || !mesa.mesa || !mesa.mesa.idMesa) return;
+     if (!mesa || !mesa.mesa || !mesa.mesa.idMesa) return;
+
       HttpService.eliminar("cancelar_mesa.php", mesa.mesa.idMesa).then((resultado) => {
-        if (resultado) {
-          this.$buefy.toast.open({
-            message: "Mesa liberada correctamente",
-            type: "is-success"
-          });
-          this.crearMesas();
-        } else {
-          this.$buefy.toast.open({
-            message: "No se pudo liberar la mesa",
-            type: "is-danger"
-          });
-        }
+        const mensaje = resultado
+          ? "Mesa liberada correctamente"
+          : "No se pudo liberar la mesa";
+        const tipo = resultado ? "is-success" : "is-danger";
+
+        this.$buefy.toast.open({ message: mensaje, type: tipo });
+        if (resultado) this.crearMesas();
       });
     },
 
@@ -182,13 +186,13 @@ export default {
         title: `Cobrar a la mesa #${mesa.mesa.idMesa}`,
         message: `El cliente debe pagar <b>$${mesa.mesa.total}</b>`,
         inputAttrs: {
-          type: 'number',
-          placeholder: 'Monto pagado',
+          type: "number",
+          placeholder: "Monto pagado",
           min: mesa.mesa.total
         },
-        confirmText: 'Registrar venta',
-        cancelText: 'Cancelar',
-        type: 'is-success',
+        confirmText: "Registrar venta",
+        cancelText: "Cancelar",
+        type: "is-success",
         hasIcon: true,
         trapFocus: true,
         dangerouslyUseHTMLString: true,
@@ -205,37 +209,45 @@ export default {
           }
 
           const cambio = montoPagado - total;
-const payload = {
-  idMesa: mesa.mesa.idMesa,
-  total: total,
-  cliente: mesa.mesa.cliente,
-  atiende: mesa.mesa.atiende,
-  idUsuario: this.datos.idUsuario, // ← asegúrate de que esté definido
-  insumos: mesa.insumos,
-  pagado: montoPagado
-};
+          const idUsuario = this.datos.idUsuario || mesa.mesa.idUsuario;
 
-console.log("Payload enviado:", payload);
+          if (!idUsuario) {
+            this.$buefy.toast.open({
+              message: "No se puede registrar la venta: falta el usuario",
+              type: "is-danger"
+            });
+            return;
+          }
 
+          const payload = {
+            idMesa: mesa.mesa.idMesa,
+            total,
+            cliente: mesa.mesa.cliente,
+            atiende: mesa.mesa.atiende,
+            idUsuario,
+            insumos: mesa.insumos,
+            pagado: montoPagado
+          };
 
           this.cargando = true;
 
           HttpService.registrar(payload, "registrar_venta.php").then((registrado) => {
             if (registrado) {
-              this.$buefy.dialog.alert({
+this.$buefy.dialog.alert({
   title: "Venta registrada",
   message: `Gracias por su compra, su cambio <b>$${cambio}</b>`,
   confirmText: "OK",
   type: "is-success",
   hasIcon: true,
   dangerouslyUseHTMLString: true
-              }).then(() => {
-                this.imprimirComprobante(payload);
-                HttpService.eliminar("cancelar_mesa.php", mesa.mesa.idMesa).then(() => {
-                  this.crearMesas();
-                  this.cargando = false;
-                });
-              });
+});
+
+// acciones posteriores aquí, sin `.then()`
+this.imprimirComprobante(payload);
+HttpService.eliminar("cancelar_mesa.php", mesa.mesa.idMesa).then(() => {
+  this.crearMesas();
+  this.cargando = false;
+});
             } else {
               this.$buefy.toast.open({
                 message: "Error al registrar la venta",
@@ -249,10 +261,10 @@ console.log("Payload enviado:", payload);
     },
 
     imprimirComprobante(venta) {
-      let hoy = new Date();
-      let fecha = hoy.getFullYear() + '-' + (hoy.getMonth() + 1) + '-' + hoy.getDate();
-      let hora = hoy.getHours() + ":" + hoy.getMinutes() + ":" + hoy.getSeconds();
-      let fechaVenta = fecha + ' ' + hora;
+      const hoy = new Date();
+      const fecha = `${hoy.getFullYear()}-${hoy.getMonth() + 1}-${hoy.getDate()}`;
+      const hora = `${hoy.getHours()}:${hoy.getMinutes()}:${hoy.getSeconds()}`;
+      const fechaVenta = `${fecha} ${hora}`;
 
       this.ventaSeleccionada = {
         atendio: venta.atiende,

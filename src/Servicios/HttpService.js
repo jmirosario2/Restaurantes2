@@ -1,14 +1,19 @@
 const RUTA_GLOBAL = "http://localhost/Restaurantes2/api/"
 
 const HttpService = {
-    async registrar(datos, ruta){
-        const respuesta = await fetch(RUTA_GLOBAL + ruta, {
-            method: "post",
-            body: JSON.stringify(datos),
-        });
-        let resultado = await respuesta.json()
-        return resultado
-    },
+  async registrar(datos, ruta) {
+    const respuesta = await fetch(RUTA_GLOBAL + ruta, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json" // ✅ encabezado obligatorio
+      },
+      body: JSON.stringify(datos)
+    });
+
+    const resultado = await respuesta.json();
+    return resultado;
+  }
+,
 
     async obtenerConDatos(datos, ruta){
         const respuesta = await fetch(RUTA_GLOBAL + ruta, {
