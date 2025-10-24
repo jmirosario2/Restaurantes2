@@ -99,7 +99,9 @@
                                 <b-button type="is-warning" icon-left="check" v-if="checkedRows.length > 0" @click="marcarInsumosEntregados(mesa)">Marcar entrega</b-button>
                             </p>
                             <p class="control">
-                                <b-button type="is-danger" icon-left="close"  @click="cancelarOrden(mesa.mesa.idMesa)">Cancelar</b-button>
+                               <!--  <b-button type="is-danger" icon-left="close"  @click="cancelarOrden(mesa.mesa.idMesa)">Cancelar</b-button> -->
+                                 <b-button type="is-danger" @click="cancelarMesa(mesa)">Cancelar</b-button>
+
                             </p>
                         </div>
                     </div>
@@ -165,6 +167,24 @@ export default ({
             })
         },
 
+cancelarMesa(mesa) {
+  if (!mesa || !mesa.mesa || !mesa.mesa.idMesa) return;
+
+  HttpService.eliminar("cancelar_mesa.php", mesa.mesa.idMesa).then((resultado) => {
+    if (resultado) {
+      this.$buefy.toast.open({
+        message: "Mesa liberada correctamente",
+        type: "is-success"
+      });
+      this.crearMesas();
+    } else {
+      this.$buefy.toast.open({
+        message: "No se pudo liberar la mesa",
+        type: "is-danger"
+      });
+    }
+  });
+},
         obtenerDatos() {
             HttpService.obtener("obtener_datos_local.php").then((resultado) => {
                 this.datos = resultado;
