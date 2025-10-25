@@ -4,7 +4,7 @@ define('DIRECTORIO', './fotos/');
 
 function verificarTablas() {
     $bd = conectarBaseDatos();
-    $sentencia  = $bd->query("SELECT COUNT(*) AS resultado FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'botanero_ventas'");
+    $sentencia  = $bd->query("SELECT COUNT(*) AS resultado FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'restaurantesNl'");
     return $sentencia->fetchAll();
 }
 
@@ -41,27 +41,6 @@ function obtenerVentasSemanaDeUsuario($idUsuario) {
 
 }
 
-function obtenerInsumosMesa($idMesa) {
-    global $db;
-    $idMesa = intval($idMesa);
-    $stmt = $db->prepare("
-        SELECT id, codigo, nombre, precio, caracteristicas, cantidad, estado
-        FROM insumos_mesa
-        WHERE idMesa = ?
-    ");
-    $stmt->execute([$idMesa]);
-    $insumos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    foreach ($insumos as &$i) {
-        $i['cantidad'] = intval($i['cantidad']);
-        $i['precio'] = floatval($i['precio']);
-        $i['subtotal'] = $i['cantidad'] * $i['precio'];
-    }
-
-    return $insumos;
-}
-
-
 function obtenerInsumosMasVendidos($limite){
 	$bd = conectarBaseDatos();
 	$sentencia = $bd->prepare("SELECT SUM(insumos_venta.precio * insumos_venta.cantidad )
@@ -85,12 +64,15 @@ function obtenerTotalesPorMesa(){
 	return $sentencia->fetchAll();
 }
 
-function obtenerVentasDelDia(){
-	$bd = conectarBaseDatos();
-	$sentencia = $bd->query("SELECT IFNULL(SUM(pagado),0) AS totalVentasHoy
-	FROM ventas
-	WHERE DATE(fecha) = CURDATE()");
-	return $sentencia->fetchObject()->totalVentasHoy;
+function obtenerVentasDelDia() {
+    $bd = conectarBaseDatos();
+    $hoy = date('Y-m-d');
+    $sql = "SELECT IFNULL(SUM(total),0) AS totalVentasHoy
+            FROM ventas
+            WHERE DATE(fecha) = :hoy";
+    $stmt = $bd->prepare($sql);
+    $stmt->execute([':hoy' => $hoy]);
+    return $stmt->fetchObject()->totalVentasHoy;
 }
 
 function obtenerNumeroUsuarios(){
@@ -106,42 +88,19 @@ function obtenerNumeroInsumos(){
 	FROM insumos");
 	return $sentencia->fetchObject()->numeroInsumos;
 }
-function guardarCSV($idMesa, $datos) {
-    $directorio = './mesas_ocupadas';
-    if (!is_dir($directorio)) {
-        mkdir($directorio, 0755, true); // crea el directorio si no existe
-    }
 
-    $rutaArchivo = "$directorio/$idMesa.csv";
-    $archivo = fopen($rutaArchivo, 'w');
-
-    if ($archivo === false) {
-        error_log("No se pudo abrir el archivo CSV para la mesa $idMesa");
-        return false;
-    }
-
-    fputcsv($archivo, $datos);
-    fclose($archivo);
-    return true;
-}
 function obtenerTotalVentas(){
 	$bd = conectarBaseDatos();
 	$sentencia = $bd->query("SELECT IFNULL(SUM(total),0) AS totalVentas
 	FROM ventas");
 	return $sentencia->fetchObject()->totalVentas;
 }
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+
 function obtenerNumeroMesasOcupadas(){
-	$ruta = __DIR__ . '/mesas_ocupadas';
-	if (!is_dir($ruta)) {
-		error_log("Directorio no encontrado: $ruta");
-		return 0; // O lanza una excepción si prefieres
-	}
-	$archivos = new FilesystemIterator($ruta, FilesystemIterator::SKIP_DOTS);
+	$archivos = new FilesystemIterator("./mesas_ocupadas", FilesystemIterator::SKIP_DOTS);
 	return iterator_count($archivos);
 }
+
 function obtenerVentasUsuario($fechaInicio, $fechaFin){
 	$bd = conectarBaseDatos();
 	$sentencia = $bd->prepare("SELECT usuarios.nombre, SUM(ventas.total) AS totalVentas
@@ -227,39 +186,15 @@ function obtenerInsumosVenta($idVenta){
 	return $sentencia->fetchAll();
 }
 
-/* function registrarVenta($venta){
+function registrarVenta($venta){
 	$bd = conectarBaseDatos();
 	$sentencia = $bd->prepare("INSERT INTO ventas (idMesa, cliente, fecha, total, pagado, idUsuario) VALUES (?,?,?,?,?,?)");
-	$sentencia->execute([$venta->idMesa, $venta->cliente, date("Y-m-d H:i:s"), $venta->total, $venta->pagado,  $venta->idUsuario]);
+	$sentencia->execute([$venta->idMesa, $venta->cliente, date("Y-m-d H:i:s"), $venta->total, $venta->pagado,  $venta->idUsario]);
 	$idVenta = $bd->lastInsertId();
 
 	$insumosRegistrados = registrarInsumosVenta($venta->insumos, $idVenta);
 	$archivoEliminado = unlink("./mesas_ocupadas/". $venta->idMesa .".csv");
 	if($sentencia && count($insumosRegistrados) > 0 && $archivoEliminado) return true;
-} */
-function registrarVenta($venta){
-  $bd = conectarBaseDatos();
-  $sentencia = $bd->prepare("INSERT INTO ventas (idMesa, cliente, fecha, total, pagado, idUsuario) VALUES (?,?,?,?,?,?)");
-  $ejecutado = $sentencia->execute([
-    $venta->idMesa,
-    $venta->cliente,
-    date("Y-m-d H:i:s"),
-    $venta->total,
-    $venta->pagado,
-    $venta->idUsuario
-  ]);
-
-  $idVenta = $bd->lastInsertId();
-  $insumosRegistrados = registrarInsumosVenta($venta->insumos, $idVenta);
-  $archivo = "./mesas_ocupadas/" . $venta->idMesa . ".csv";
-  $archivoEliminado = file_exists($archivo) ? unlink($archivo) : false;
-
-  return [
-    'ventaRegistrada' => $ejecutado,
-    'idVenta' => $idVenta,
-    'insumos' => $insumosRegistrados,
-    'archivoEliminado' => $archivoEliminado
-  ];
 }
 
 function registrarInsumosVenta($insumos, $idVenta){
@@ -282,61 +217,40 @@ function obtenerMesas(){
 	return $mesas;
 }
 
-function leerArchivo($numeroMesa) {
-    $ruta = "./mesas_ocupadas/" . $numeroMesa . ".csv";
+function leerArchivo($numeroMesa){
+	if(file_exists("./mesas_ocupadas/". $numeroMesa .".csv")){
+		$archivo = fopen("./mesas_ocupadas/". $numeroMesa .".csv", "r");
+		if($archivo ){
+			while (!feof($archivo) ) {
+				$datos[] = fgetcsv($archivo, 1000, ',');
+			}
 
-    if (file_exists($ruta)) {
-        $archivo = fopen($ruta, "r");
-        $datos = [];
+			$mesa = [
+				"idMesa" => $datos[0][0],
+				"atiende" => $datos[0][1],
+				"idUsuario" => $datos[0][2],
+				"total" => $datos[0][3],
+				"estado" => $datos[0][4],
+				"cliente" => $datos[0][5],
+			];
 
-        if ($archivo) {
-            while (!feof($archivo)) {
-                $fila = fgetcsv($archivo, 1000, ',');
-                if ($fila && is_array($fila)) {
-                    $datos[] = $fila;
-                }
-            }
-            fclose($archivo);
+			$insumos = crearInsumosMesa($datos);
 
-            // Validar que la primera fila tenga al menos 6 columnas
-            if (isset($datos[0]) && count($datos[0]) >= 6) {
-                $mesa = [
-                    "idMesa"    => $datos[0][0],
-                    "atiende"   => $datos[0][1],
-                    "idUsuario" => $datos[0][2],
-                    "total"     => $datos[0][3],
-                    "estado"    => $datos[0][4],
-                    "cliente"   => $datos[0][5],
-                ];
-            } else {
-                error_log("CSV mal formado para la mesa $numeroMesa");
-                $mesa = [
-                    "idMesa"    => $numeroMesa,
-                    "atiende"   => null,
-                    "idUsuario" => null,
-                    "total"     => null,
-                    "estado"    => null,
-                    "cliente"   => null,
-                ];
-            }
+			fclose($archivo);
+			return ["mesa" => $mesa, "insumos" => $insumos];
+		}
+	} else {
+		$mesa = [
+			"idMesa" => $numeroMesa,
+			"atiende" => "",
+			"idUsuario" => "",
+			"total" => "",
+			"estado" => "libre",
+		];
 
-            // Si vas a usar insumos más adelante
-            $insumos = []; // o crearInsumosMesa($datos);
-            return ["mesa" => $mesa, "insumos" => $insumos];
-        }
-    }
-
-    // Si el archivo no existe
-    $mesa = [
-        "idMesa"    => $numeroMesa,
-        "atiende"   => "",
-        "idUsuario" => "",
-        "total"     => "",
-        "estado"    => "libre",
-        "cliente"   => "",
-    ];
-    $insumos = [];
-    return ["mesa" => $mesa, "insumos" => $insumos];
+		$insumos = [];
+		return ["mesa" => $mesa, "insumos" => $insumos];
+	}
 }
 
 function crearInsumosMesa($datos){
@@ -377,7 +291,8 @@ function editarMesa($mesa){
 		return true;
 	}
 }
-/* function ocuparMesa($mesa){
+
+function ocuparMesa($mesa){
 	$archivo = fopen("./mesas_ocupadas/".$mesa->id.".csv", "w");
 	$cliente = ($mesa->cliente === "") ? "MOSTRADOR": $mesa->cliente;
 	fputcsv($archivo, array($mesa->id, $mesa->atiende, $mesa->idUsuario, $mesa->total, "ocupada", $cliente));
@@ -388,48 +303,6 @@ function editarMesa($mesa){
 
 	fclose($archivo);
 	return true;
-} */
-function ocuparMesa($datosMesa) {
-    $idMesa = $datosMesa->id;
-    $directorio = './mesas_ocupadas';
-
-    if (!is_dir($directorio)) {
-        mkdir($directorio, 0755, true);
-    }
-
-    $rutaArchivo = "$directorio/$idMesa.csv";
-    $archivo = fopen($rutaArchivo, 'w');
-
-    if (!$archivo) {
-        error_log("No se pudo abrir el archivo CSV para la mesa $idMesa");
-        return false;
-    }
-
-    // Guardar encabezado de la mesa
-    fputcsv($archivo, [
-        $idMesa,
-        $datosMesa->atiende,
-        $datosMesa->idUsuario,
-        $datosMesa->total,
-        "pendiente",
-        $datosMesa->cliente
-    ]);
-
-    // Guardar insumos
-    foreach ($datosMesa->insumos as $insumo) {
-        fputcsv($archivo, [
-            $insumo->id,
-            $insumo->codigo,
-            $insumo->nombre,
-            $insumo->precio,
-            $insumo->caracteristicas,
-            $insumo->cantidad,
-            $insumo->estado
-        ]);
-    }
-
-    fclose($archivo);
-    return true;
 }
 
 function cambiarPassword($idUsuario, $password) {
@@ -623,7 +496,7 @@ function obtenerCategorias(){
 
 function conectarBaseDatos() {
 	$host = "localhost";
-	$db   = "botanero_ventas";
+	$db   = "restaurantesNl";
 	$user = "root";
 	$pass = "";
 	$charset = 'utf8mb4';

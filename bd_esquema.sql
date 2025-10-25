@@ -1,5 +1,5 @@
-CREATE DATABASE botanero_ventas;
-USE botanero_ventas
+CREATE DATABASE restaurantesNl;
+USE restaurantesNl
 CREATE TABLE categorias(
 	id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
 	tipo ENUM("PLATILLO", "BEBIDA") NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE insumos(
 CREATE TABLE informacion_negocio(
 	nombre VARCHAR(100),
 	telefono VARCHAR(15),
-	numeroMesas TINYINT, 
+	numeroMesas TINYINT,
 	logo VARCHAR(255)
 );
 

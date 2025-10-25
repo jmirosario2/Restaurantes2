@@ -1,2 +1,2 @@
-# botanero-ventas
- Sistema para un restaurante, local donde vendan comida, botanas, etc.
+# restaurantesNl
+ Sistema para un restaurante, local donde vendan comida, bebidas, etc.

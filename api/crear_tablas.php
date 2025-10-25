@@ -7,12 +7,12 @@ $usuario = "root";
 $password = "";
 $resultados = [];
 
-$crear_bd = "CREATE DATABASE IF NOT EXISTS botanero_ventas";
+$crear_bd = "CREATE DATABASE IF NOT EXISTS restaurantesNl";
 
 
 $sentencias = [
 	["tabla"=>"categorias",
-	"sentencia" => 
+	"sentencia" =>
 		'CREATE TABLE categorias(
             id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
             tipo ENUM("PLATILLO", "BEBIDA") NOT NULL,
@@ -78,11 +78,11 @@ $conexion = new PDO("mysql:host=$host", $usuario, $password);
 $conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 $creada_bd = $conexion->exec($crear_bd);
 if($creada_bd) array_push($resultados, "Base de datos creada correctamente");
-$conexion->exec('USE botanero_ventas');
+$conexion->exec('USE restaurantesNl');
 #Ahora crear las tablas
 //$conexion->close();
 
-$conexion = new PDO("mysql:host=$host;dbname=botanero_ventas", $usuario, $password);
+$conexion = new PDO("mysql:host=$host;dbname=restaurantesNl", $usuario, $password);
 $conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 foreach ($sentencias as $sentencia) {

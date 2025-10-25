@@ -1,14 +1,15 @@
 <?php
 include_once "encabezado.php";
-include_once "funciones.php";
-
-$datos = json_decode(file_get_contents("php://input"));
-
-if (!$datos || !isset($datos->insumos) || !is_array($datos->insumos)) {
-    error_log("Payload inválido o incompleto");
-    echo json_encode(["error" => "Datos incompletos"]);
+$mesa = json_decode(file_get_contents("php://input"));
+if (!$mesa) {
+    http_response_code(500);
     exit;
 }
 
-ocuparMesa($datos);
-echo json_encode(true);
+include_once "funciones.php";
+
+$resultado = ocuparMesa($mesa);
+echo json_encode($resultado);
+
+
+
