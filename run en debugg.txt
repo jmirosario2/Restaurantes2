@@ -3,3 +3,7 @@ cmd o powershell como admin
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 npm run dev
+
+crear un sistema para restaurantes que tenga instalacion personalizada desde el primir inicio con el nombre del restaurante, numero de tlf, logo. Que tenga la opción de crear varios usuarios, que tenga una sección para ordenar donde se administran las mesas y lo que pide cada cliente, una opción de mesas donde se crea la cantidad de mesas y número de personas que la ocuparán, sección de inventario, sección de categorias, sección de comanda que es donde llegará todo lo que se ordena y entrará con diversos estrados donde el cocinero puede seleccionar y marcar lo que ya esta listo y el tiempo transcurriedo entre cada estado, sección de cobros para que los clientes puedan pagar con efectivo, transferencias bancarias y tarjetas, sección de contabilidad con todos los detalles y filtros necesarios para una contabilidad detallada, sección inicial de dashboard donde aparecen metricas de todas las secciones, menú con fotos, crear código con php, html, bootstrap, css, MySQL, js
+
+

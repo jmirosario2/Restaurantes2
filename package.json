@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@mdi/font": "^6.7.96",
+    "axios": "^1.12.2",
     "buefy": "^0.9.20",
     "chart.js": "^2.9.4",
     "printd": "^1.5.1",
@@ -19,6 +20,8 @@
     "vue-toastify": "^1.8.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.28.5",
+    "@babel/preset-env": "^7.28.5",
     "autoprefixer": "^7.1.2",
     "babel-core": "^6.22.1",
     "babel-helper-vue-jsx-merge-props": "^2.0.3",

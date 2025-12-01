@@ -1,0 +1,19 @@
+.card-img-top {
+    width: 100%;          /* ocupa todo el ancho del card */
+    height: 200px;        /* altura fija (ajústala a tu gusto) */
+    object-fit: cover;    /* recorta la imagen manteniendo proporción */
+}
+
+.card {
+    transition: transform 0.2s;
+}
+.card:hover {
+    transform: scale(1.03);
+}
+.ticket-box {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+}

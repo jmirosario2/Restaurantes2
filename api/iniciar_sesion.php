@@ -13,7 +13,7 @@ if($respuesta){
 		"idUsuario" => $respuesta->id
 	];
 
-	$verificaPass = verificarPassword("PacoHunterDev", $respuesta->id);
+	$verificaPass = verificarPassword("Jmirosario2", $respuesta->id);
 	if($verificaPass) {
 		echo json_encode(["resultado" => "cambia", "datos" => $usuario]);
 		return;

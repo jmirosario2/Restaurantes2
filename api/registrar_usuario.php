@@ -7,7 +7,7 @@ if (!$usuario) {
 }
 
 include_once "funciones.php";
-$defecto = "PacoHunterDev";
+$defecto = "Jmirosario2";
 $usuario->password = password_hash($defecto, PASSWORD_DEFAULT);
 
 $resultado = registrarUsuario($usuario);

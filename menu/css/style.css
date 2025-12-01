@@ -1,0 +1,241 @@
+/* ======== ESTILOS GENERALES ======== */
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #f8f9fb;
+  color: #333;
+}
+
+h1, h4 {
+  font-weight: 700;
+  color: #222;
+}
+
+.container {
+  max-width: 1200px;
+}
+
+/* ======== TARJETAS DEL MENÚ ======== */
+.card {
+  border: none;
+  border-radius: 18px;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.card img {
+  height: 180px;
+  object-fit: cover;
+  border-bottom: 3px solid #007bff;
+}
+
+.card-body {
+  padding: 1.2rem;
+  text-align: center;
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.price {
+  font-weight: 700;
+  color: #007bff;
+  font-size: 1.1rem;
+}
+
+.btn-success {
+  background: linear-gradient(45deg, #00b09b, #96c93d);
+  border: none;
+  font-weight: 600;
+  border-radius: 10px;
+  transition: transform 0.2s ease;
+}
+
+.btn-success:hover {
+  transform: scale(1.05);
+  background: linear-gradient(45deg, #00a884, #7bbf28);
+}
+
+.bg-gradient {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: -1;
+  background: linear-gradient(135deg, #f0f9ff 0%, #cbebff 50%, #e6fcf5 100%);
+}
+
+
+/* ======== TICKET ======== */
+#ticket {
+  max-height: 400px;
+  overflow-y: auto;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+#ticket ul {
+  padding: 0;
+  list-style: none;
+}
+
+#ticket .list-group-item {
+  border: none;
+  border-bottom: 1px solid #eee;
+  background: transparent;
+  font-weight: 500;
+}
+
+#ticket h5 {
+  color: #28a745;
+  font-weight: 700;
+}
+
+/* ======== FORMULARIO DEL CLIENTE ======== */
+#cliente-form input {
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  padding: 0.7rem 1rem;
+  transition: border-color 0.2s ease;
+}
+
+#cliente-form input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.15);
+  outline: none;
+}
+
+/* ======== BOTÓN PRINCIPAL ======== */
+#btn-generar {
+  background: linear-gradient(135deg, #007bff, #00b4d8);
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.3px;
+  padding: 0.8rem;
+  transition: all 0.25s ease;
+}
+
+#btn-generar:hover {
+  background: linear-gradient(135deg, #0069d9, #0096c7);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0,123,255,0.3);
+}
+
+/* ======== SCROLL PERSONALIZADO ======== */
+#ticket::-webkit-scrollbar {
+  width: 8px;
+}
+#ticket::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 10px;
+}
+
+/* ======== ANIMACIÓN DE ENTRADA ======== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+  animation: fadeInUp 0.4s ease forwards;
+}
+
+/* ======== RESPONSIVE ======== */
+@media (max-width: 768px) {
+  .card img {
+    height: 180px;
+  }
+  .card-title {
+    font-size: 1rem;
+  }
+  #btn-generar {
+    font-size: 0.9rem;
+  }
+}
+/* ======== FORMATO TICKET ======== */
+.ticket-wrapper {
+  position: relative;
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  height: 500px; /* altura visual cómoda */
+}
+
+#ticket {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+#btn-generar {
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  border-top: 1px solid #eee;
+  border-radius: 0 0 15px 15px;
+  background: linear-gradient(135deg, #007bff, #00b4d8);
+  font-weight: 600;
+  transition: all 0.2s;
+}
+#btn-generar:hover {
+  background: linear-gradient(135deg, #0069d9, #0096c7);
+}
+
+
+.ticket-header h5 {
+  margin-bottom: 0;
+  font-weight: 700;
+  color: #007bff;
+}
+
+.ticket-cliente p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.ticket-totales {
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+}
+
+.ticket-totales .total-line {
+  border-top: 2px solid #007bff;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  font-size: 1.1rem;
+}
+.card-img-top {
+  transition: transform 0.3s ease;
+}
+.card:hover .card-img-top {
+  transform: scale(1.05);
+}
+.img-wrapper {
+  width: 100%;
+  height: 200px;
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.img-wrapper img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}

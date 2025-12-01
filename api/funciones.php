@@ -294,7 +294,7 @@ function editarMesa($mesa){
 
 function ocuparMesa($mesa){
 	$archivo = fopen("./mesas_ocupadas/".$mesa->id.".csv", "w");
-	$cliente = ($mesa->cliente === "") ? "MOSTRADOR": $mesa->cliente;
+	$cliente = ($mesa->cliente === "") ? "Para Llevar": $mesa->cliente;
 	fputcsv($archivo, array($mesa->id, $mesa->atiende, $mesa->idUsuario, $mesa->total, "ocupada", $cliente));
 	foreach ($mesa->insumos as $insumo)
 	{
